@@ -20,11 +20,11 @@ namespace Either
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get 
+            get
             {
                 //return ImmutableArray.Create(EitherAnalyzer.NotExhaustiveId);
                 return ImmutableArray.Create(Array.Empty<string>());
-            
+
             }
         }
 
@@ -46,12 +46,12 @@ namespace Either
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
 
             // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: CodeFixResources.CodeFixTitle,
-                    createChangedSolution: c => MakeUppercaseAsync(context.Document, declaration, c),
-                    equivalenceKey: nameof(CodeFixResources.CodeFixTitle)),
-                diagnostic);
+            //context.RegisterCodeFix(
+            //    CodeAction.Create(
+            //        title: CodeFixResources.CodeFixTitle,
+            //        createChangedSolution: c => MakeUppercaseAsync(context.Document, declaration, c),
+            //        equivalenceKey: nameof(CodeFixResources.CodeFixTitle)),
+            //    diagnostic);
         }
 
         private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
