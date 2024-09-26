@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Either
+namespace RhymesOfUncertainty
 {
     //[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(EitherCodeFixProvider)), Shared]
     public class EitherCodeFixProvider : CodeFixProvider

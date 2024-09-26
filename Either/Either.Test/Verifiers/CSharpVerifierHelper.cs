@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Immutable;
 
-namespace Either.Test
+namespace RhymesOfUncertainty.Test
 {
     internal static class CSharpVerifierHelper
     {

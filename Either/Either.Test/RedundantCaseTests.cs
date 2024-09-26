@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using VerifyCS = Either.Test.CSharpAnalyzerVerifier<Either.EitherAnalyzer>;
+using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
-namespace Either.Test;
+namespace RhymesOfUncertainty.Test;
 
 [TestClass]
 public class RedundantCaseTests

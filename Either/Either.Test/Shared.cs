@@ -1,4 +1,4 @@
-﻿namespace Either.Test;
+﻿namespace RhymesOfUncertainty.Test;
 
 internal static class Shared
 {

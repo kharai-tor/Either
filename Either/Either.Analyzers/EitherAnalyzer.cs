@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Either;
+namespace RhymesOfUncertainty;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class EitherAnalyzer : DiagnosticAnalyzer

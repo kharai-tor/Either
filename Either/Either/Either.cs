@@ -1,4 +1,4 @@
-﻿namespace Either;
+﻿namespace RhymesOfUncertainty;
 
 readonly struct Either<T1, T2>
 {

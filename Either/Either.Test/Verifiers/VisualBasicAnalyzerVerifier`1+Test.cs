@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.VisualBasic.Testing;
 
-namespace Either.Test
+namespace RhymesOfUncertainty.Test
 {
     public static partial class VisualBasicAnalyzerVerifier<TAnalyzer>
         where TAnalyzer : DiagnosticAnalyzer, new()

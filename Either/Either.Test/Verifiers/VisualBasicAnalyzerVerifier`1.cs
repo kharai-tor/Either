@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.VisualBasic.Testing;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Either.Test
+namespace RhymesOfUncertainty.Test
 {
     public static partial class VisualBasicAnalyzerVerifier<TAnalyzer>
         where TAnalyzer : DiagnosticAnalyzer, new()
