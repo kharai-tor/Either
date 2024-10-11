@@ -45,70 +45,36 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule); } }
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule];
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterOperationAction(AnalyzeOperation, OperationKind.Switch);
+        context.RegisterOperationAction(AnalyzeSwitchStatement, OperationKind.Switch);
+        context.RegisterOperationAction(AnalyzeSwitchExpression, OperationKind.SwitchExpression);
 
         //SyntaxKind.ConditionalAccessExpression
         //SyntaxKind.SuppressNullableWarningExpression
     }
 
-    private void AnalyzeOperation(OperationAnalysisContext context)
+    private void AnalyzeSwitchStatement(OperationAnalysisContext context)
     {
         var switchOp = (ISwitchOperation)context.Operation;
         var switchSyntax = (SwitchStatementSyntax)switchOp.Syntax;
         var isNullForgiving = switchSyntax.Expression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
 
-        if (switchOp.Value.Kind != OperationKind.PropertyReference)
+        var typeSwitchedOn = GetTypeSwitchedOn(switchOp.Value);
+        if (typeSwitchedOn == null)
         {
             return;
         }
-
-        var propertyReference = (IPropertyReferenceOperation)switchOp.Value;
-
-        if (propertyReference.Property.Name != "Value")
-        {
-            return;
-        }
-
-        //Test switching on an anonymous object probably
-        //Test switching on something other than either
-        if (propertyReference.Instance == null ||
-            propertyReference.Instance.Type == null ||
-            propertyReference.Instance.Type.Kind != SymbolKind.NamedType ||
-            propertyReference.Instance.Type.Name != "Either")
-        {
-            return;
-        }
-
-        var typeSwitchedOn = (INamedTypeSymbol)propertyReference.Instance.Type;
-        if (typeSwitchedOn.Arity <= 1) //TODO test switching on type called Either that has an arity of 1 or 0
-        {
-            return;
-        }
-
-        ////TODO, is the symbol equality comparer thing necessary? prolly yes?
-        //var nonNullableTypeArgs = typeSwitchedOn.TypeArguments
-        //    .Select(ta => ta.WithNullableAnnotation(NullableAnnotation.NotAnnotated))
-        //    .ToList();
-        //var casesThatNeedToBeHandled = new HashSet<ITypeSymbol?>(nonNullableTypeArgs, SymbolEqualityComparer.Default);
-        //var unhandledCases = new HashSet<ITypeSymbol?>(nonNullableTypeArgs, SymbolEqualityComparer.Default);
-        //var mustHandleNull = typeSwitchedOn.TypeArguments.Any(ta => ta.IsReferenceType || ta.NullableAnnotation == NullableAnnotation.Annotated);
-        //if (mustHandleNull)
-        //{
-        //    casesThatNeedToBeHandled.Add(null);
-        //    unhandledCases.Add(null);
-        //}
 
         var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving);
         var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
 
-        var redundantCases = new List<(IPatternCaseClauseOperation Op, ITypeSymbol? Type)>();
-        var defaultCase = default(IDefaultCaseClauseOperation);
+        var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
+        var defaultCase = default(IOperation);
 
         for (int i = 0; i < switchOp.Cases.Length; i++)
         {
@@ -118,48 +84,14 @@ public class EitherAnalyzer : DiagnosticAnalyzer
                 var clause = @case.Clauses[j];
                 if (clause.CaseKind == CaseKind.Default)
                 {
-                    defaultCase = (IDefaultCaseClauseOperation)clause;
+                    defaultCase = clause;
                     continue;
                 }
 
                 if (clause.CaseKind == CaseKind.Pattern) //THE WHEN THING! with a test!
                 {
                     var c = (IPatternCaseClauseOperation)clause;
-
-                    ITypeSymbol matchedType;
-
-                    if (c.Pattern.Kind == OperationKind.TypePattern)
-                    {
-                        var p = (ITypePatternOperation)c.Pattern;
-                        matchedType = p.MatchedType;
-                    }
-                    else if (c.Pattern.Kind == OperationKind.DeclarationPattern)
-                    {
-                        var p = (IDeclarationPatternOperation)c.Pattern;
-                        matchedType = p.MatchedType; // the var thing check!
-                    }
-                    else if (c.Pattern.Kind == OperationKind.ConstantPattern)
-                    {
-                        var p = (IConstantPatternOperation)c.Pattern;
-                        if (!p.Value.Syntax.IsKind(SyntaxKind.NullLiteralExpression))
-                        {
-                            continue;
-                        }
-                        matchedType = null;
-                    }
-                    else if (c.Pattern.Kind == OperationKind.RecursivePattern)
-                    {
-                        var p = (IRecursivePatternOperation)c.Pattern;
-
-                        var tupleType = p.GetTupleType(context.Compilation);
-                        if (tupleType == null)
-                        {
-                            continue;
-                        }
-
-                        matchedType = tupleType;
-                    }
-                    else
+                    if (!c.Pattern.TryExtractType(context, out var matchedType))
                     {
                         continue;
                     }
@@ -177,6 +109,96 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword);
+    }
+
+    private void AnalyzeSwitchExpression(OperationAnalysisContext context)
+    {
+        var switchOp = (ISwitchExpressionOperation)context.Operation;
+        var switchSyntax = (SwitchExpressionSyntax)switchOp.Syntax;
+        var isNullForgiving = switchSyntax.GoverningExpression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
+
+        var typeSwitchedOn = GetTypeSwitchedOn(switchOp.Value);
+        if (typeSwitchedOn == null)
+        {
+            return;
+        }
+
+        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving);
+        var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
+
+        var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
+        var defaultCase = default(IOperation);
+
+        for (int i = 0; i < switchOp.Arms.Length; i++)
+        {
+            var arm = switchOp.Arms[i];
+            if (arm.Pattern.Kind == OperationKind.DiscardPattern)
+            {
+                defaultCase = arm;
+            }
+
+            if (!arm.Pattern.TryExtractType(context, out var matchedType))
+            {
+                continue;
+            }
+
+            if (casesThatNeedToBeHandled.Contains(matchedType))
+            {
+                unhandledCases.Remove(matchedType);
+            }
+            else
+            {
+                redundantCases.Add((arm, matchedType));
+            }
+        }
+
+        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword);
+    }
+
+    private INamedTypeSymbol? GetTypeSwitchedOn(IOperation value)
+    {
+        if (value.Kind != OperationKind.PropertyReference)
+        {
+            return null;
+        }
+
+        var propertyReference = (IPropertyReferenceOperation)value;
+
+        if (propertyReference.Property.Name != "Value")
+        {
+            return null;
+        }
+
+        //Test switching on an anonymous object probably
+        //Test switching on something other than either
+        if (propertyReference.Instance == null ||
+            propertyReference.Instance.Type == null ||
+            propertyReference.Instance.Type.Kind != SymbolKind.NamedType ||
+            propertyReference.Instance.Type.Name != "Either")
+        {
+            return null;
+        }
+
+        var typeSwitchedOn = (INamedTypeSymbol)propertyReference.Instance.Type;
+        if (typeSwitchedOn.Arity <= 1) //TODO test switching on type called Either that has an arity of 1 or 0
+        {
+            return null;
+        }
+
+        return typeSwitchedOn;
+    }
+
+    private void ReportDiagnostics
+    (
+        OperationAnalysisContext context,
+        IOperation? defaultCase,
+        HashSet<ITypeSymbol?> casesThatNeedToBeHandled,
+        HashSet<ITypeSymbol?> unhandledCases,
+        List<(IOperation Op, ITypeSymbol? Type)> redundantCases,
+        SyntaxToken switchKeyword
+    )
+    {
         if (defaultCase != null)
         {
             if (unhandledCases.Count == 0)
@@ -198,7 +220,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
                 .Select(t => t?.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat) ?? "null")
             );
 
-            var diagnostic = Diagnostic.Create(NotExhaustiveRule, switchSyntax.SwitchKeyword.GetLocation(), wordType, typeNames, wordIs);
+            var diagnostic = Diagnostic.Create(NotExhaustiveRule, switchKeyword.GetLocation(), wordType, typeNames, wordIs);
             context.ReportDiagnostic(diagnostic);
         }
 
@@ -244,6 +266,8 @@ public class EitherAnalyzer : DiagnosticAnalyzer
     //14. Either<int, int> should warn? Check how it works first, (low priority)
 
     //15. Base Type
+
+    //16. Unit test for var pattern both for switch statement and switch expression
 }
 
 public static class Extensions
@@ -299,6 +323,40 @@ public static class Extensions
 
         unwrapped = namedType.TypeArguments[0];
         return true;
+    }
+
+    public static bool TryExtractType(this IPatternOperation pattern, OperationAnalysisContext context, out ITypeSymbol? matchedType)
+    {
+        switch (pattern.Kind)
+        {
+            case OperationKind.TypePattern:
+                {
+                    var p = (ITypePatternOperation)pattern;
+                    matchedType = p.MatchedType;
+                    return true;
+                }
+            case OperationKind.DeclarationPattern:
+                {
+                    var p = (IDeclarationPatternOperation)pattern;
+                    matchedType = p.MatchedType;
+                    return matchedType != null;
+                }
+            case OperationKind.ConstantPattern:
+                {
+                    var p = (IConstantPatternOperation)pattern;
+                    matchedType = null;
+                    return p.Value.Syntax.IsKind(SyntaxKind.NullLiteralExpression);
+                }
+            case OperationKind.RecursivePattern:
+                {
+                    var p = (IRecursivePatternOperation)pattern;
+                    matchedType = p.GetTupleType(context.Compilation);
+                    return matchedType != null;
+                }
+            default:
+                matchedType = null;
+                return false;
+        }
     }
 
     public static INamedTypeSymbol? GetTupleType(this IRecursivePatternOperation pattern, Compilation compilation)
