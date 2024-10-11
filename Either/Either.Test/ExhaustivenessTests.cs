@@ -71,7 +71,7 @@ public class ExhaustivenessTests
     [TestMethod]
     public async Task Switch_Stmt_With_A_Class_Requires_Null_Case_Handling()
     {
-        var code = GenerateSwitchStmt(["string", "int"], ["int", "string s"]);
+        var code = GenerateSwitchStmt(["string", "int"], ["string s", "int"]);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.NotExhaustiveId)
             .WithLocation(0)
             .WithArguments("Case", "null", "is");
@@ -81,7 +81,7 @@ public class ExhaustivenessTests
     [TestMethod]
     public async Task Switch_Expr_With_A_Class_Requires_Null_Case_Handling()
     {
-        var code = GenerateSwitchExpr(["string", "int"], ["string => 1", "int => 2"]);
+        var code = GenerateSwitchExpr(["string", "int"], ["string s => 1", "int => 2"]);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.NotExhaustiveId)
             .WithLocation(0)
             .WithArguments("Case", "null", "is");
