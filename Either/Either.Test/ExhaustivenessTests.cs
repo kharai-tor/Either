@@ -243,8 +243,7 @@ class C
     [TestMethod]
     public async Task Switch_Stmt_With_Only_Default_Case_Succeeds()
     {
-        var code = "using System.Collections.Generic;"
-            + Shared.Structs
+        var code = Shared.Structs
             + @"
 class C
 {
