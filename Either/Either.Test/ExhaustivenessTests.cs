@@ -9,7 +9,7 @@ namespace RhymesOfUncertainty.Test;
 public class ExhaustivenessTests
 {
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_An_Unhandled_Type_Complain()
+    public async Task Switch_Stmt_With_An_Unhandled_Type_Complains()
     {
         var code = Shared.Structs + @"
 class C
@@ -42,7 +42,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_An_Unhandled_Type_Complain_2()
+    public async Task Switch_Stmt_With_An_Unhandled_Type_Complains_2()
     {
         var code = Shared.Structs + @"
 class C
@@ -75,7 +75,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_Two_Unhandled_Types_Complain()
+    public async Task Switch_Stmt_With_Two_Unhandled_Types_Complains()
     {
         var code = Shared.Structs + @"
 class C
@@ -106,7 +106,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_A_Class_Require_Null_Case_To_Be_Handled()
+    public async Task Switch_Stmt_With_A_Class_Requires_Null_Case_Handling()
     {
         var code = Shared.Structs + @"
 class C
@@ -141,7 +141,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_A_Nullable_Value_Type_Require_Null_Case_To_Be_Handled()
+    public async Task Switch_Stmt_With_A_Nullable_Value_Type_Requires_Null_Case_Handling()
     {
         var code = Shared.Structs + @"
 class C
@@ -176,7 +176,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_Only_Value_Types_Dont_Require_Null_To_Be_Handled()
+    public async Task Switch_Stmt_With_Only_Value_Types_Does_Not_Require_Null_Case_Handling()
     {
         var code = Shared.Structs + @"
 class C
@@ -204,7 +204,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_All_Cases_Handled_Succeed()
+    public async Task Switch_Stmt_With_All_Cases_Handled_Succeeds()
     {
         var code = "using System.Collections.Generic;"
             + Shared.Structs
@@ -241,7 +241,7 @@ class C
     }
 
     [TestMethod]
-    public async Task Given_A_Switch_Statement_With_No_Cases_Handled_But_A_Default_Case_Succeed()
+    public async Task Switch_Stmt_With_Only_Default_Case_Succeeds()
     {
         var code = "using System.Collections.Generic;"
             + Shared.Structs
@@ -271,7 +271,7 @@ class C
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    private string GenerateSwitchExpr(string[] typesToCheck, string[] casesChecked, string[] usings = default)
+    private static string GenerateSwitchExpr(string[] typesToCheck, string[] casesChecked, string[] usings = default)
     {
         var code =
             string.Join("\n", (usings ?? []).Select(u => $"using {u};")) +
