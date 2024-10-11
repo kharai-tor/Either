@@ -1,6 +1,6 @@
 ﻿namespace RhymesOfUncertainty;
 
-readonly struct Either<T1, T2>
+public readonly struct Either<T1, T2>
 {
     public object Value { get; private init; }
 
@@ -15,7 +15,7 @@ readonly struct Either<T1, T2>
     }
 }
 
-readonly struct Either<T1, T2, T3>
+public readonly struct Either<T1, T2, T3>
 {
     public object Value { get; private init; }
 

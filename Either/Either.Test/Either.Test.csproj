@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Either\Either.csproj" />
     <ProjectReference Include="..\Either.CodeFixes\Either.CodeFixes.csproj" />
     <ProjectReference Include="..\Either.Analyzers\Either.Analyzers.csproj" />
   </ItemGroup>
