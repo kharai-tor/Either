@@ -135,7 +135,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             var arm = switchOp.Arms[i];
             if (arm.Pattern.Kind == OperationKind.DiscardPattern)
             {
-                defaultCase = arm;
+                defaultCase = arm.Pattern;
             }
 
             if (!arm.Pattern.TryExtractType(context, out var matchedType))
@@ -149,7 +149,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             }
             else
             {
-                redundantCases.Add((arm, matchedType));
+                redundantCases.Add((arm.Pattern, matchedType));
             }
         }
 
