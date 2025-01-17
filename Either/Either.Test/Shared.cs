@@ -16,20 +16,27 @@ readonly struct Either<T1, T2, T3>
 }
 ";
 
-    internal static string GenerateSwitchStmt(string[] typesToCheck, Either<TaggedCase, TaggedCase[]>[] casesChecked, bool tagSwitch = false, string[] usings = default)
+    internal static string GenerateSwitchStmt
+    (
+        string[] typesToCheck,
+        Either<TaggedCase, TaggedCase[]>[] casesChecked,
+        bool tagSwitch = false,
+        string[] usings = default,
+        bool isNullForgiving = false
+    )
     {
         int tagNumber = 0;
 
         var code =
             string.Join("\n", (usings ?? []).Select(u => $"using {u};")) +
             "\n" +
-            Shared.Structs +
+            Structs +
 @$"
 class C
 {{
     void M(Either<{string.Join(", ", typesToCheck)}> x)
     {{
-        {TagIfNecessary("switch", tagSwitch)} (x.Value)
+        {TagIfNecessary("switch", tagSwitch)} ({(isNullForgiving ? "x.Value!" : "x.Value")})
         {{
             {string.Join("\n", casesChecked.Select(GetCase).Select(c => $"{c} break;"))}
         }}
@@ -65,7 +72,7 @@ class C
         var code =
             string.Join("\n", (usings ?? []).Select(u => $"using {u};")) +
             "\n" +
-            Shared.Structs +
+            Structs +
 @$"
 class C
 {{
