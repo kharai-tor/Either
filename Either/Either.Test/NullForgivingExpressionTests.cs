@@ -8,7 +8,7 @@ namespace RhymesOfUncertainty.Test;
 public class NullForgivingExpressionTests
 {
     [TestMethod]
-    public async Task Given_Switch_Statement_With_Null_Forgiving_Expr_Dont_Require_Null_Case_To_Be_Handled()
+    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_No_Null_Case_Succeeds()
     {
         var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false)], isNullForgiving: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
@@ -17,7 +17,7 @@ public class NullForgivingExpressionTests
     //TODO how about nullable structs?
 
     [TestMethod]
-    public async Task Given_Switch_Statement_With_Null_Forgiving_Expr_And_Null_Case_Warn()
+    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_Null_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false), ("null", true)], isNullForgiving: true);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
