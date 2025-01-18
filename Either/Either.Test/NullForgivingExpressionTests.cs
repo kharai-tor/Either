@@ -1,22 +1,29 @@
-﻿using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
+﻿using System.Linq;
+using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
 namespace RhymesOfUncertainty.Test;
 
 public class NullForgivingExpressionTests
 {
-    [Fact]
-    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_No_Null_Case_Succeeds()
+    [Theory]
+    [InlineData(new[] { "int", "string" }, new[] { "int", "string" })]
+    [InlineData(new[] { "int", "bool?" }, new[] { "int", "bool" })]
+    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_No_Null_Case_Succeeds(string[] typesToCheck, string[] untaggedCasesChecked)
     {
-        var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false)], isNullForgiving: true);
+        var casesChecked = untaggedCasesChecked.Select(c => (c, false)).ToArray();
+        var code = Shared.GenerateSwitchStmt(typesToCheck, [casesChecked], isNullForgiving: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    //TODO how about nullable structs?
-
-    [Fact]
-    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_Null_Case_Complains()
+    [Theory]
+    [InlineData(new[] { "int", "string" }, new[] { "int", "string" }, new[] { "null" })]
+    [InlineData(new[] { "int", "bool?" }, new[] { "int", "bool" }, new[] { "null" })]
+    public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_Null_Case_Complains(string[] typesToCheck, string[] untaggedCasesChecked, string[] taggedCasesChecked)
     {
-        var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false), ("null", true)], isNullForgiving: true);
+        var casesChecked = untaggedCasesChecked.Select(c => (c, false))
+            .Concat(taggedCasesChecked.Select(c => (c, true)))
+            .ToArray();
+        var code = Shared.GenerateSwitchStmt(typesToCheck, [casesChecked], isNullForgiving: true);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
             .WithLocation(0)
             .WithArguments("null");
