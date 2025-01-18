@@ -1,6 +1,7 @@
 ﻿global using System.Threading.Tasks;
 global using Xunit;
 global using TaggedCase = (string Case, bool Tagged);
+using System;
 using System.Linq;
 
 namespace RhymesOfUncertainty.Test;
@@ -17,6 +18,29 @@ readonly struct Either<T1, T2, T3>
     public object Value { get; }
 }
 ";
+
+    internal static string GenerateSwitch
+    (
+        SwitchType switchType,
+        string[] typesToCheck,
+        string[] untaggedCasesChecked,
+        string[] taggedCasesChecked = null,
+        bool tagSwitch = false,
+        string[] usings = default,
+        bool isNullForgiving = false
+    )
+    {
+        var casesChecked = untaggedCasesChecked.Select(c => (c, false))
+            .Concat((taggedCasesChecked ?? []).Select(c => (c, true)))
+            .ToArray();
+
+        return switchType switch
+        {
+            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, [casesChecked], tagSwitch, usings, isNullForgiving),
+            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, tagSwitch, usings, isNullForgiving),
+            _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
+        };
+    }
 
     internal static string GenerateSwitchStmt
     (
@@ -67,7 +91,7 @@ class C
         }
     }
 
-    internal static string GenerateSwitchExpr(string[] typesToCheck, TaggedCase[] casesChecked, bool tagSwitch = false, string[] usings = default)
+    internal static string GenerateSwitchExpr(string[] typesToCheck, TaggedCase[] casesChecked, bool tagSwitch = false, string[] usings = default, bool isNullForgiving = false)
     {
         int tagNumber = 0;
 
@@ -80,7 +104,7 @@ class C
 {{
     int M(Either<{string.Join(", ", typesToCheck)}> x)
     {{
-        return x.Value {TagIfNecessary("switch", tagSwitch)}
+        return {(isNullForgiving ? "x.Value!" : "x.Value")} {TagIfNecessary("switch", tagSwitch)}
         {{
             {string.Join(",\n", casesChecked.Select(GetCase))}
         }};
@@ -99,4 +123,10 @@ class C
             return necessary ? $"{{|#{tagNumber++}:{s}|}}" : s;
         }
     }
+}
+
+public enum SwitchType
+{
+    Stmt,
+    Expr,
 }
