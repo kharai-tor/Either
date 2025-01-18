@@ -1,13 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
+﻿using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
 namespace RhymesOfUncertainty.Test;
 
-[TestClass]
 public class KindsOfTypesTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Given_Switch_Statement_With_Matching_Generic_Types_Succeed()
     {
         var code = "using System.Collections.Generic;"
@@ -33,7 +30,7 @@ class C
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Given_Switch_Statement_With_Mismatching_Generic_Type_Fail()
     {
         var code = "using System.Collections.Generic;"
@@ -66,7 +63,7 @@ class C
         await VerifyCS.VerifyAnalyzerAsync(code, expectedNotExhaustive, expectedRedundantCase);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Given_Switch_Statement_With_Partially_Mismatching_Generic_Type_Fail()
     {
         var code = "using System.Collections.Generic;"
@@ -99,7 +96,7 @@ class C
         await VerifyCS.VerifyAnalyzerAsync(code, expectedNotExhaustive, expectedRedundantCase);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Given_Switch_Statement_With_Partially_Mismatching_Nested_Generic_Type_Fail()
     {
         var code = "using System.Collections.Generic;"
@@ -133,7 +130,7 @@ class C
 
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Given_Switch_Statement_With_Matching_Delegate_Types_Succeed()
     {
         var code = "using System;"
@@ -159,7 +156,7 @@ class C
 
     }
 
-//    [TestMethod]
+//    [Fact]
 //    public async Task Given_Switch_Statement_With_Matching_Tuple_Types_Succeed()//problematic
 //    {
 //        var code = "using System.Collections.Generic;"

@@ -1,13 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
+﻿using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
 namespace RhymesOfUncertainty.Test;
 
-[TestClass]
 public class NullForgivingExpressionTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_No_Null_Case_Succeeds()
     {
         var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false)], isNullForgiving: true);
@@ -16,7 +13,7 @@ public class NullForgivingExpressionTests
 
     //TODO how about nullable structs?
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Null_Forgiving_Expr_And_Null_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["int", "string"], [("int", false), ("string", false), ("null", true)], isNullForgiving: true);

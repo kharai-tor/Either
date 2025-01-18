@@ -1,13 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
+﻿using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
 namespace RhymesOfUncertainty.Test;
 
-[TestClass]
 public class RedundantCaseTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_A_Redundant_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("string s", true)]);
@@ -17,7 +14,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_A_Redundant_Case_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("string s", true)]);
@@ -27,7 +24,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_A_Redundant_Null_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("null", true)]);
@@ -37,7 +34,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_A_Redundant_Null_Case_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("null", true)]);
@@ -47,7 +44,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Multiple_Redundant_Cases_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("string s", true), ("decimal", true), ("null", true)]);
@@ -67,7 +64,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expectedString, expectedDecimal, expectedNull);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_Multiple_Redundant_Cases_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("string s", true), ("decimal", true), ("null", true)]);
@@ -87,7 +84,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expectedString, expectedDecimal, expectedNull);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Both_Cases_Handled_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("default", true)]);
@@ -97,7 +94,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_Both_Cases_Handled_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("_", true)]);
@@ -107,7 +104,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_All_Cases_Handled_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int", "decimal"], [("bool b", false), ("int", false), ("decimal d", false), ("default", true)]);
@@ -117,7 +114,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_All_Cases_Handled_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int", "decimal"], [("bool b", false), ("int", false), ("decimal d", false), ("_", true)]);
@@ -127,7 +124,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_A_Redundant_Regular_Case_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("decimal d", true), ("default", true)]);
@@ -143,7 +140,7 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expectedRegular, expectedDefault);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_A_Redundant_Regular_Case_And_A_Redundant_Default_Case_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("decimal d", true), ("_", true)]);

@@ -1,4 +1,6 @@
-﻿global using TaggedCase = (string Case, bool Tagged);
+﻿global using System.Threading.Tasks;
+global using Xunit;
+global using TaggedCase = (string Case, bool Tagged);
 using System.Linq;
 
 namespace RhymesOfUncertainty.Test;

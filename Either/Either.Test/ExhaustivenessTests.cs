@@ -1,13 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
+﻿using VerifyCS = RhymesOfUncertainty.Test.CSharpAnalyzerVerifier<RhymesOfUncertainty.EitherAnalyzer>;
 
 namespace RhymesOfUncertainty.Test;
 
-[TestClass]
 public class ExhaustivenessTests
 {
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_An_Unhandled_Type_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false)], tagSwitch: true);
@@ -17,7 +14,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_An_Unhandled_Type_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false)], tagSwitch: true);
@@ -27,7 +24,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_An_Unhandled_Type_Complains_2()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool", false)], tagSwitch: true);
@@ -37,7 +34,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_An_Unhandled_Type_Complains_2()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool", false)], tagSwitch: true);
@@ -47,7 +44,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Two_Unhandled_Types_Complains()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [], tagSwitch: true);
@@ -57,7 +54,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_Two_Unhandled_Types_Complains()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [], tagSwitch: true);
@@ -67,7 +64,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_A_Class_Requires_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchStmt(["string", "int"], [("string s", false), ("int", false)], tagSwitch: true);
@@ -77,7 +74,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_A_Class_Requires_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchExpr(["string", "int"], [("string s", false), ("int", false)], tagSwitch: true);
@@ -87,7 +84,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_A_Nullable_Value_Type_Requires_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int?"], [("bool b", false), ("int", false)], tagSwitch: true);
@@ -97,7 +94,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_A_Nullable_Value_Type_Requires_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int?"], [("bool b", false), ("int", false)], tagSwitch: true);
@@ -107,21 +104,21 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Only_Value_Types_Does_Not_Require_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false)], tagSwitch: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_Only_Value_Types_Does_Not_Require_Null_Case_Handling()
     {
         var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false)], tagSwitch: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_All_Cases_Handled_Succeeds()
     {
         var code = Shared.GenerateSwitchStmt(
@@ -133,7 +130,7 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_All_Cases_Handled_Succeeds()
     {
         var code = Shared.GenerateSwitchExpr(
@@ -145,14 +142,14 @@ public class ExhaustivenessTests
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Stmt_With_Only_Default_Case_Succeeds()
     {
         var code = Shared.GenerateSwitchStmt(["string", "int", "bool"], [("default", false)], tagSwitch: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task Switch_Expr_With_Only_Default_Case_Succeeds()
     {
         var code = Shared.GenerateSwitchExpr(["string", "int", "bool"], [("_", false)], tagSwitch: true);
