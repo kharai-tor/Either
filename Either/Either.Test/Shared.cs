@@ -27,7 +27,8 @@ readonly struct Either<T1, T2, T3>
         string[] taggedCasesChecked = null,
         bool tagSwitch = false,
         string[] usings = default,
-        bool isNullForgiving = false
+        bool isNullForgiving = false,
+        bool tagExpr = false
     )
     {
         var casesChecked = untaggedCasesChecked.Select(c => (c, false))
@@ -36,8 +37,8 @@ readonly struct Either<T1, T2, T3>
 
         return switchType switch
         {
-            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, [casesChecked], tagSwitch, usings, isNullForgiving),
-            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, tagSwitch, usings, isNullForgiving),
+            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, [casesChecked], tagSwitch, usings, isNullForgiving, tagExpr),
+            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, tagSwitch, usings, isNullForgiving, tagExpr),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
     }
@@ -48,7 +49,8 @@ readonly struct Either<T1, T2, T3>
         Either<TaggedCase, TaggedCase[]>[] casesChecked,
         bool tagSwitch = false,
         string[] usings = default,
-        bool isNullForgiving = false
+        bool isNullForgiving = false,
+        bool tagExpr = false
     )
     {
         int tagNumber = 0;
@@ -62,7 +64,7 @@ class C
 {{
     void M(Either<{string.Join(", ", typesToCheck)}> x)
     {{
-        {TagIfNecessary("switch", tagSwitch)} ({(isNullForgiving ? "x.Value!" : "x.Value")})
+        {TagIfNecessary("switch", tagSwitch)} ({Expr()})
         {{
             {string.Join("\n", casesChecked.Select(GetCase).Select(c => $"{c} break;"))}
         }}
@@ -70,6 +72,11 @@ class C
 }}
 ";
         return code;
+
+        string Expr()
+        {
+            return TagIfNecessary(isNullForgiving ? "x.Value!" : "x.Value", tagExpr);
+        }
 
         string GetCase(Either<TaggedCase, TaggedCase[]> caseChecked)
         {
@@ -91,7 +98,15 @@ class C
         }
     }
 
-    internal static string GenerateSwitchExpr(string[] typesToCheck, TaggedCase[] casesChecked, bool tagSwitch = false, string[] usings = default, bool isNullForgiving = false)
+    internal static string GenerateSwitchExpr
+    (
+        string[] typesToCheck, 
+        TaggedCase[] casesChecked, 
+        bool tagSwitch = false, 
+        string[] usings = default, 
+        bool isNullForgiving = false,
+        bool tagExpr = false
+    )
     {
         int tagNumber = 0;
 
@@ -104,7 +119,7 @@ class C
 {{
     int M(Either<{string.Join(", ", typesToCheck)}> x)
     {{
-        return {(isNullForgiving ? "x.Value!" : "x.Value")} {TagIfNecessary("switch", tagSwitch)}
+        return {Expr()} {TagIfNecessary("switch", tagSwitch)}
         {{
             {string.Join(",\n", casesChecked.Select(GetCase))}
         }};
@@ -112,6 +127,11 @@ class C
 }}
 ";
         return code;
+
+        string Expr()
+        {
+            return TagIfNecessary(isNullForgiving ? "x.Value!" : "x.Value", tagExpr);
+        }
 
         string GetCase(TaggedCase tc, int index)
         {

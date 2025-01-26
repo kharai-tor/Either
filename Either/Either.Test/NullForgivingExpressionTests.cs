@@ -29,5 +29,14 @@ public class NullForgivingExpressionTests
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    //TODO when all types are non-nullable, null-forgiving is redundant
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool", "int" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "int" })]
+    public async Task Switch_With_Null_Forgiving_Expr_And_No_Nullable_Types_Complains(SwitchType switchType, string[] typesToCheck, string[] untaggedCasesChecked)
+    {
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, untaggedCasesChecked, [], isNullForgiving: true, tagExpr: true);
+        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantNullForgivingExprId)
+            .WithLocation(0);
+        await VerifyCS.VerifyAnalyzerAsync(code, expected);
+    }
 }

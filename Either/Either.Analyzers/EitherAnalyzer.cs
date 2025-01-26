@@ -45,7 +45,18 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule];
+    public const string RedundantNullForgivingExprId = "SwitchRedundantNullForgivingExpr";
+    private static readonly DiagnosticDescriptor RedundantNullForgivingExprRule = new
+    (
+        RedundantNullForgivingExprId,
+        title: "The null-forgiving expression is redundant",
+        messageFormat: "The null-forgiving expression is redundant because there are no nullable types to be handled",
+        category: "Compiler",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true
+    );
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule, RedundantNullForgivingExprRule];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -70,7 +81,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving);
+        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, out var hasNullableType);
         var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
 
         var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
@@ -109,7 +120,8 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword);
+        var redundantNullForgivingExpr = isNullForgiving && !hasNullableType ? switchSyntax.Expression : null;
+        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword, redundantNullForgivingExpr);
     }
 
     private void AnalyzeSwitchExpression(OperationAnalysisContext context)
@@ -124,7 +136,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving);
+        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, out var hasNullableType);
         var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
 
         var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
@@ -153,7 +165,8 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword);
+        var redundantNullForgivingExpr = isNullForgiving && !hasNullableType ? switchSyntax.GoverningExpression : null;
+        ReportDiagnostics(context, defaultCase, casesThatNeedToBeHandled, unhandledCases, redundantCases, switchSyntax.SwitchKeyword, redundantNullForgivingExpr);
     }
 
     private INamedTypeSymbol? GetTypeSwitchedOn(IOperation value)
@@ -196,7 +209,8 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         HashSet<ITypeSymbol?> casesThatNeedToBeHandled,
         HashSet<ITypeSymbol?> unhandledCases,
         List<(IOperation Op, ITypeSymbol? Type)> redundantCases,
-        SyntaxToken switchKeyword
+        SyntaxToken switchKeyword,
+        ExpressionSyntax? redundantNullForgivingExpr
     )
     {
         if (defaultCase != null)
@@ -227,6 +241,12 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         foreach (var (op, type) in redundantCases)
         {
             var diagnostic = Diagnostic.Create(RedundantCaseRule, op.Syntax.GetLocation(), type?.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat) ?? "null");
+            context.ReportDiagnostic(diagnostic);
+        }
+
+        if (redundantNullForgivingExpr != null)
+        {
+            var diagnostic = Diagnostic.Create(RedundantNullForgivingExprRule, redundantNullForgivingExpr.GetLocation());
             context.ReportDiagnostic(diagnostic);
         }
     }
@@ -272,10 +292,10 @@ public class EitherAnalyzer : DiagnosticAnalyzer
 
 public static class Extensions
 {
-    public static HashSet<ITypeSymbol?> GetCasesThatNeedToBeHandled(this INamedTypeSymbol namedType, bool ignoreNull)
+    public static HashSet<ITypeSymbol?> GetCasesThatNeedToBeHandled(this INamedTypeSymbol namedType, bool ignoreNull, out bool hasNullableType)
     {
         var result = new HashSet<ITypeSymbol?>(SymbolEqualityComparer.Default);
-        var hasNullableType = false;
+        hasNullableType = false;
 
         for (int i = 0; i < namedType.TypeArguments.Length; i++)
         {
