@@ -37,7 +37,7 @@ readonly struct Either<T1, T2, T3>
 
         return switchType switch
         {
-            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, [casesChecked], tagSwitch, usings, isNullForgiving, tagExpr),
+            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, casesChecked.Select(c => (Either<TaggedCase, TaggedCase[]>)c).ToArray(), tagSwitch, usings, isNullForgiving, tagExpr),
             SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, tagSwitch, usings, isNullForgiving, tagExpr),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
@@ -100,10 +100,10 @@ class C
 
     internal static string GenerateSwitchExpr
     (
-        string[] typesToCheck, 
-        TaggedCase[] casesChecked, 
-        bool tagSwitch = false, 
-        string[] usings = default, 
+        string[] typesToCheck,
+        TaggedCase[] casesChecked,
+        bool tagSwitch = false,
+        string[] usings = default,
         bool isNullForgiving = false,
         bool tagExpr = false
     )
