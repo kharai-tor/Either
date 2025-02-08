@@ -66,7 +66,7 @@ class C
     {{
         {TagIfNecessary("switch", tagSwitch)} ({Expr()})
         {{
-            {string.Join("\n", casesChecked.Select(GetCase).Select(c => $"{c} break;"))}
+            {string.Join("\r\n", casesChecked.Select(GetCase).Select(c => $"{c} break;"))}
         }}
     }}
 }}
