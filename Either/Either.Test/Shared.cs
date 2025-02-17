@@ -20,8 +20,9 @@ readonly struct Either<T1, T2, T3>
 }
 ";
 
-    internal static string GenerateSwitch(SwitchType switchType, IList<string> typesToCheck, IList<string> casesChecked)
+    internal static string GenerateSwitch(SwitchType switchType, IList<string> typesToCheck, IList<string> casesChecked, SwitchGenerationOptions options = null)
     {
+        options ??= new SwitchGenerationOptions();
         var cases = new List<Either<TaggedCase, TaggedCase[]>>();
 
         foreach (var @case in casesChecked)
@@ -38,8 +39,8 @@ readonly struct Either<T1, T2, T3>
 
         return switchType switch
         {
-            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, cases),
-            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, cases.Select(c => (TaggedCase)c.Value).ToArray()),
+            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, cases, tagSwitch: options.TagSwitch, usings: options.Usings, isNullForgiving: options.IsNullForgiving, tagExpr: options.TagExpr),
+            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, cases.Select(c => (TaggedCase)c.Value).ToArray(), tagSwitch: options.TagSwitch, usings: options.Usings, isNullForgiving: options.IsNullForgiving, tagExpr: options.TagExpr),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
 
@@ -47,31 +48,6 @@ readonly struct Either<T1, T2, T3>
         {
             return c.StartsWith("t:") ? new TaggedCase(c[2..], true) : new TaggedCase(c, false);
         }
-    }
-
-    [Obsolete]
-    internal static string GenerateSwitch
-    (
-        SwitchType switchType,
-        string[] typesToCheck,
-        string[] untaggedCasesChecked,
-        string[] taggedCasesChecked,
-        bool tagSwitch = false,
-        string[] usings = default,
-        bool isNullForgiving = false,
-        bool tagExpr = false
-    )
-    {
-        var casesChecked = untaggedCasesChecked.Select(c => (c, false))
-            .Concat((taggedCasesChecked ?? []).Select(c => (c, true)))
-            .ToArray();
-
-        return switchType switch
-        {
-            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, casesChecked.Select(c => (Either<TaggedCase, TaggedCase[]>)c).ToArray(), tagSwitch, usings, isNullForgiving, tagExpr),
-            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, tagSwitch, usings, isNullForgiving, tagExpr),
-            _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
-        };
     }
 
     internal static string GenerateSwitchStmt
@@ -180,4 +156,12 @@ public enum SwitchType
 {
     Stmt,
     Expr,
+}
+
+internal class SwitchGenerationOptions
+{
+    internal bool TagSwitch { get; init; } = false;
+    internal string[] Usings { get; init; } = default;
+    internal bool IsNullForgiving { get; init; } = false;
+    internal bool TagExpr { get; init; } = false;
 }
