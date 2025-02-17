@@ -11,7 +11,7 @@ public class NullForgivingExpressionTests
     [InlineData(SwitchType.Expr, new[] { "int", "bool?" }, new[] { "int", "bool" })]
     public async Task Switch_With_Null_Forgiving_Expr_And_No_Null_Case_Succeeds(SwitchType switchType, string[] typesToCheck, string[] untaggedCasesChecked)
     {
-        var code = Shared.GenerateSwitch(switchType, typesToCheck, untaggedCasesChecked, isNullForgiving: true);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, untaggedCasesChecked, [], isNullForgiving: true);
         await VerifyCS.VerifyAnalyzerAsync(code);
     }
 

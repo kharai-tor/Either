@@ -2,6 +2,7 @@
 global using Xunit;
 global using TaggedCase = (string Case, bool Tagged);
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RhymesOfUncertainty.Test;
@@ -19,12 +20,42 @@ readonly struct Either<T1, T2, T3>
 }
 ";
 
+    internal static string GenerateSwitch(SwitchType switchType, IList<string> typesToCheck, IList<string> casesChecked)
+    {
+        var cases = new List<Either<TaggedCase, TaggedCase[]>>();
+
+        foreach (var @case in casesChecked)
+        {
+            if (@case.Contains('|'))
+            {
+                cases.Add(@case.Split('|').Select(GetTaggedCase).ToArray());
+            }
+            else
+            {
+                cases.Add(GetTaggedCase(@case));
+            }
+        }
+
+        return switchType switch
+        {
+            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, cases),
+            SwitchType.Expr => throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
+        };
+
+        static TaggedCase GetTaggedCase(string c)
+        {
+            return c.StartsWith("t:") ? new TaggedCase(c[2..], true) : new TaggedCase(c, false);
+        }
+    }
+
+    [Obsolete]
     internal static string GenerateSwitch
     (
         SwitchType switchType,
         string[] typesToCheck,
         string[] untaggedCasesChecked,
-        string[] taggedCasesChecked = null,
+        string[] taggedCasesChecked,
         bool tagSwitch = false,
         string[] usings = default,
         bool isNullForgiving = false,
@@ -45,8 +76,8 @@ readonly struct Either<T1, T2, T3>
 
     internal static string GenerateSwitchStmt
     (
-        string[] typesToCheck,
-        Either<TaggedCase, TaggedCase[]>[] casesChecked,
+        IList<string> typesToCheck,
+        IList<Either<TaggedCase, TaggedCase[]>> casesChecked,
         bool tagSwitch = false,
         string[] usings = default,
         bool isNullForgiving = false,
@@ -66,7 +97,7 @@ class C
     {{
         {TagIfNecessary("switch", tagSwitch)} ({Expr()})
         {{
-            {string.Join("\r\n", casesChecked.Select(GetCase).Select(c => $"{c} break;"))}
+            {string.Join("\r\n            ", casesChecked.Select(GetCase).Select(c => $"{c}\n                break;"))}
         }}
     }}
 }}
@@ -83,7 +114,7 @@ class C
             return caseChecked.Value switch
             {
                 TaggedCase tc => GetSingleCase(tc.Case, tc.Tagged),
-                TaggedCase[] tcs => string.Join("\n", tcs.Select(tc => GetSingleCase(tc.Case, tc.Tagged)))
+                TaggedCase[] tcs => string.Join("\n            ", tcs.Select(tc => GetSingleCase(tc.Case, tc.Tagged)))
             };
         }
 

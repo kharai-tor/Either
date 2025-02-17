@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,14 +14,11 @@ public class RedundantCaseCodeFixProvider : CodeFixProvider
 {
     public sealed override ImmutableArray<string> FixableDiagnosticIds => [EitherAnalyzer.RedundantCaseId];
 
-    // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-    public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         var label = root.FindToken(diagnosticSpan.Start).Parent.FirstAncestorOrSelf<CasePatternSwitchLabelSyntax>();
@@ -30,8 +26,7 @@ public class RedundantCaseCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Remove redundant case",
-                createChangedDocument: c => RemoveCase(context.Document, label, c),
-                equivalenceKey: "CodeFixTitle"), //TODO equivalence what?
+                createChangedDocument: c => RemoveCase(context.Document, label, c)),
         diagnostic);
     }
 
@@ -39,13 +34,11 @@ public class RedundantCaseCodeFixProvider : CodeFixProvider
     {
         var switchSection = (SwitchSectionSyntax)label.Parent;
 
-        if (switchSection.Labels.Count == 1)
-        {
-            var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
-            var newRoot = root.RemoveNode(switchSection, SyntaxRemoveOptions.KeepNoTrivia);
-            return document.WithSyntaxRoot(newRoot);
-        }
+        var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
+        var newRoot = switchSection.Labels.Count == 1 ?
+            root.RemoveNode(switchSection, SyntaxRemoveOptions.KeepNoTrivia) :
+            root.RemoveNode(label, SyntaxRemoveOptions.KeepNoTrivia);
 
-        return document;
+        return document.WithSyntaxRoot(newRoot);
     }
 }
