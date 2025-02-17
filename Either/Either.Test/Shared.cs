@@ -39,7 +39,7 @@ readonly struct Either<T1, T2, T3>
         return switchType switch
         {
             SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, cases),
-            SwitchType.Expr => throw new NotImplementedException(),
+            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, cases.Select(c => (TaggedCase)c.Value).ToArray()),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
 
@@ -131,7 +131,7 @@ class C
 
     internal static string GenerateSwitchExpr
     (
-        string[] typesToCheck,
+        IList<string> typesToCheck,
         TaggedCase[] casesChecked,
         bool tagSwitch = false,
         string[] usings = default,
@@ -152,7 +152,7 @@ class C
     {{
         return {Expr()} {TagIfNecessary("switch", tagSwitch)}
         {{
-            {string.Join(",\n", casesChecked.Select(GetCase))}
+            {string.Join(",\n            ", casesChecked.Select(GetCase))}
         }};
     }}
 }}
@@ -164,9 +164,9 @@ class C
             return TagIfNecessary(isNullForgiving ? "x.Value!" : "x.Value", tagExpr);
         }
 
-        string GetCase(TaggedCase tc, int index)
+        string GetCase(TaggedCase tc)
         {
-            return $"{TagIfNecessary(tc.Case, tc.Tagged)} => {index}";
+            return $"{TagIfNecessary(tc.Case, tc.Tagged)} => 0";
         }
 
         string TagIfNecessary(string s, bool necessary)

@@ -28,6 +28,16 @@ public class RedundantCaseFixerTests
     [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool", "int|t:string s|t:decimal" }, new[] { "bool", "int" })]
 
     [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool", "int", "t:string s|t:decimal" }, new[] { "bool", "int" })]
+
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "int", "t:string" }, new[] { "bool", "int" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "t:string", "int" }, new[] { "bool", "int" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "t:string", "bool", "int" }, new[] { "bool", "int" })]
+
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "int", "t:string", "t:decimal" }, new[] { "bool", "int" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "t:string", "int", "t:decimal" }, new[] { "bool", "int" })]
+
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "int", "t:string s" }, new[] { "bool", "int" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool", "int", "t:string", "t:decimal d" }, new[] { "bool", "int" })]
     public async Task Fixer_Removes_Redundant_Casees_From_Switch(SwitchType switchType, string[] typesToCheck, string[] casesBeforeFix, string[] casesAfterFix)
     {
         var code = Shared.GenerateSwitch(switchType, typesToCheck, casesBeforeFix);
