@@ -4,50 +4,36 @@ namespace RhymesOfUncertainty.Test;
 
 public class RedundantCaseTests
 {
-    [Fact]
-    public async Task Switch_Stmt_With_A_Redundant_Case_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool b", "int", "t:string s" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool b", "int", "t:string s" })]
+    public async Task Switch_With_A_Redundant_Case_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("string s", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
             .WithLocation(0)
             .WithArguments("string");
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [Fact]
-    public async Task Switch_Expr_With_A_Redundant_Case_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool b", "int", "t:null" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool b", "int", "t:null" })]
+    public async Task Switch_With_A_Redundant_Null_Case_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("string s", true)]);
-        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(0)
-            .WithArguments("string");
-        await VerifyCS.VerifyAnalyzerAsync(code, expected);
-    }
-
-    [Fact]
-    public async Task Switch_Stmt_With_A_Redundant_Null_Case_Complains()
-    {
-        var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("null", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
             .WithLocation(0)
             .WithArguments("null");
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [Fact]
-    public async Task Switch_Expr_With_A_Redundant_Null_Case_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool b", "int", "t:string s", "t:decimal", "t:null" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool b", "int", "t:string s", "t:decimal", "t:null" })]
+    public async Task Switch_With_Multiple_Redundant_Cases_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("null", true)]);
-        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(0)
-            .WithArguments("null");
-        await VerifyCS.VerifyAnalyzerAsync(code, expected);
-    }
-
-    [Fact]
-    public async Task Switch_Stmt_With_Multiple_Redundant_Cases_Complains()
-    {
-        var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("string s", true), ("decimal", true), ("null", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
 
         var expectedString = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
             .WithLocation(0)
@@ -64,86 +50,36 @@ public class RedundantCaseTests
         await VerifyCS.VerifyAnalyzerAsync(code, expectedString, expectedDecimal, expectedNull);
     }
 
-    [Fact]
-    public async Task Switch_Expr_With_Multiple_Redundant_Cases_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool b", "int", "t:default" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool b", "int", "t:_" })]
+    public async Task Switch_With_Both_Cases_Handled_And_A_Redundant_Default_Case_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("string s", true), ("decimal", true), ("null", true)]);
-
-        var expectedString = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(0)
-            .WithArguments("string");
-
-        var expectedDecimal = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(1)
-            .WithArguments("decimal");
-
-        var expectedNull = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(2)
-            .WithArguments("null");
-
-        await VerifyCS.VerifyAnalyzerAsync(code, expectedString, expectedDecimal, expectedNull);
-    }
-
-    [Fact]
-    public async Task Switch_Stmt_With_Both_Cases_Handled_And_A_Redundant_Default_Case_Complains()
-    {
-        var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("default", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
             .WithLocation(0)
             .WithArguments("Both");
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [Fact]
-    public async Task Switch_Expr_With_Both_Cases_Handled_And_A_Redundant_Default_Case_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int", "decimal" }, new[] { "bool b", "int", "decimal d", "t:default" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int", "decimal" }, new[] { "bool b", "int", "decimal d", "t:_" })]
+    public async Task Switch_With_All_Cases_Handled_And_A_Redundant_Default_Case_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("_", true)]);
-        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
-            .WithLocation(0)
-            .WithArguments("Both");
-        await VerifyCS.VerifyAnalyzerAsync(code, expected);
-    }
-
-    [Fact]
-    public async Task Switch_Stmt_With_All_Cases_Handled_And_A_Redundant_Default_Case_Complains()
-    {
-        var code = Shared.GenerateSwitchStmt(["bool", "int", "decimal"], [("bool b", false), ("int", false), ("decimal d", false), ("default", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
         var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
             .WithLocation(0)
             .WithArguments("All");
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
 
-    [Fact]
-    public async Task Switch_Expr_With_All_Cases_Handled_And_A_Redundant_Default_Case_Complains()
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "bool", "int" }, new[] { "bool b", "int", "t:decimal d", "t:default" })]
+    [InlineData(SwitchType.Expr, new[] { "bool", "int" }, new[] { "bool b", "int", "t:decimal d", "t:_" })]
+    public async Task Switch_With_A_Redundant_Regular_Case_And_A_Redundant_Default_Case_Complains(SwitchType switchType, string[] typesToCheck, string[] casesChecked)
     {
-        var code = Shared.GenerateSwitchExpr(["bool", "int", "decimal"], [("bool b", false), ("int", false), ("decimal d", false), ("_", true)]);
-        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
-            .WithLocation(0)
-            .WithArguments("All");
-        await VerifyCS.VerifyAnalyzerAsync(code, expected);
-    }
-
-    [Fact]
-    public async Task Switch_Stmt_With_A_Redundant_Regular_Case_And_A_Redundant_Default_Case_Complains()
-    {
-        var code = Shared.GenerateSwitchStmt(["bool", "int"], [("bool b", false), ("int", false), ("decimal d", true), ("default", true)]);
-
-        var expectedRegular = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
-            .WithLocation(0)
-            .WithArguments("decimal");
-
-        var expectedDefault = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
-            .WithLocation(1)
-            .WithArguments("Both");
-
-        await VerifyCS.VerifyAnalyzerAsync(code, expectedRegular, expectedDefault);
-    }
-
-    [Fact]
-    public async Task Switch_Expr_With_A_Redundant_Regular_Case_And_A_Redundant_Default_Case_Complains()
-    {
-        var code = Shared.GenerateSwitchExpr(["bool", "int"], [("bool b", false), ("int", false), ("decimal d", true), ("_", true)]);
+        var code = Shared.GenerateSwitch(switchType, typesToCheck, casesChecked);
 
         var expectedRegular = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
             .WithLocation(0)
