@@ -1,0 +1,32 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+namespace RhymesOfUncertainty;
+<#
+    for(int i = 2; i <= 5; i++)
+    {
+        var name = "Either<" + string.Join(", ", Enumerable.Range(1, i).Select(j => "T" + j)) + ">";
+#>
+
+public struct <#=name#>
+{
+    public object Value { get; private set; }
+<#
+        for(int j = 1; j <= i; j++)
+        {
+#>
+
+    public static implicit operator <#=name#>(T<#=j#> t<#=j#>)
+    {
+        return new <#=name#> { Value = t<#=j#> };
+    }
+<#
+        }
+#>
+}
+<#
+    }
+#>
