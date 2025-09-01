@@ -11,11 +11,11 @@ internal static class Shared
     internal static readonly string Structs = @"
 readonly struct Either<T1, T2>
 {
-    public object Value { get; }
+    public object Thing { get; }
 }
 readonly struct Either<T1, T2, T3>
 {
-    public object Value { get; }
+    public object Thing { get; }
 }
 ";
 
@@ -53,7 +53,7 @@ class C
 
         string Expr()
         {
-            return TagIfNecessary(options.IsNullForgiving ? "x.Value!" : "x.Value", options.TagExpr);
+            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : "x.Thing", options.TagExpr);
         }
 
         string GetCase(string caseChecked)
@@ -98,7 +98,7 @@ class C
 
         string Expr()
         {
-            return TagIfNecessary(options.IsNullForgiving ? "x.Value!" : "x.Value", options.TagExpr);
+            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : "x.Thing", options.TagExpr);
         }
 
         string GetCase(string caseChecked)

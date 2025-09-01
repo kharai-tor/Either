@@ -178,7 +178,7 @@ public class EitherAnalyzer : DiagnosticAnalyzer
 
         var propertyReference = (IPropertyReferenceOperation)value;
 
-        if (propertyReference.Property.Name != "Value")
+        if (propertyReference.Property.Name != "Thing")
         {
             return null;
         }
