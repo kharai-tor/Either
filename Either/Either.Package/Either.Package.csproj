@@ -8,24 +8,32 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>Either</PackageId>
-    <PackageVersion>1.0.0.2</PackageVersion>
-    <Authors>tkh</Authors>
-    <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
+    <PackageId>Either.Analyzers</PackageId>
+    <PackageVersion>0.0.1</PackageVersion>
+	<Authors>Tornike Kharaishvili</Authors>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright © Tornike Kharaishvili</Copyright>
+	<Description>Analyzers and code fixes that enforce exhaustive usage of Either&lt;T1,T2...&gt; types with switch statements/expressions and more</Description>
+	  
+    <!--<PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
     <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
     <PackageIconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</PackageIconUrl>
     <RepositoryUrl>http://REPOSITORY_URL_HERE_OR_DELETE_THIS_LINE</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Either</Description>
-    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>
-    <Copyright>Copyright</Copyright>
-    <PackageTags>Either, analyzers</PackageTags>
+    
+    <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>-->
+    <PackageTags>Either analyzers, code fixes;Discriminated unions;Union types</PackageTags>
+	<PackageReadmeFile>readme.md</PackageReadmeFile>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!--<NoPackageAnalysis>true</NoPackageAnalysis>-->
 
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Either.CodeFixes\Either.CodeFixes.csproj" />
     <ProjectReference Include="..\Either.Analyzers\Either.Analyzers.csproj" />

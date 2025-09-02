@@ -3,13 +3,29 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>12</LangVersion>
 	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Either.Main</PackageId>
+		<Version>0.0.1</Version>
+		<Authors>Tornike Kharaishvili</Authors>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Copyright>Copyright © Tornike Kharaishvili</Copyright>
+		<Description>Discriminated unions/Union types with native C# switch statement/expression exhaustiveness support</Description>
+		<PackageTags>Discriminated unions;Union types;switch;exhaustiveness</PackageTags>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Either.Analyzers" Version="0.0.1" />
+	</ItemGroup>
 	<ItemGroup>
 	  <None Include="Either.cs">
 	    <DesignTime>True</DesignTime>
 	    <AutoGen>True</AutoGen>
 	    <DependentUpon>Either.tt</DependentUpon>
 	  </None>
-	</ItemGroup>	
+	</ItemGroup>
 	<ItemGroup>
 	  <None Update="Either.tt">
 	    <Generator>TextTemplatingFileGenerator</Generator>
