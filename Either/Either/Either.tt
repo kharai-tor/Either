@@ -13,15 +13,28 @@ namespace RhymesOfUncertainty;
 
 public struct <#=name#>
 {
-    public object Thing { get; private set; }
+    private bool _initialized;
+    private object _thing;
+    public object Thing 
+    { 
+        get
+        {
+            return _initialized ? _thing : default(T1);
+        }
+        private set
+        {
+            _initialized = true;
+            _thing = value;
+        }
+    }
 <#
         for(int j = 1; j <= i; j++)
         {
 #>
 
-    public static implicit operator <#=name#>(T<#=j#> t<#=j#>)
+    public static implicit operator <#=name#>(T<#=j#> t)
     {
-        return new <#=name#> { Thing = t<#=j#> };
+        return new <#=name#> { Thing = t };
     }
 <#
         }
