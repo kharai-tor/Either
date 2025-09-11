@@ -5,11 +5,13 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Either.Main</PackageId>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<Authors>Tornike Kharaishvili</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © Tornike Kharaishvili</Copyright>
 		<Description>Discriminated unions/Union types with native C# switch statement/expression exhaustiveness support</Description>
+		<PackageProjectUrl>https://github.com/kharai-tor/Either</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kharai-tor/Either</RepositoryUrl>
 		<PackageTags>Discriminated unions;Union types;switch;exhaustiveness</PackageTags>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
