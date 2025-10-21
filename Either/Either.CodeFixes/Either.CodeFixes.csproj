@@ -5,6 +5,7 @@
 		<IsPackable>false</IsPackable>
 		<RootNamespace>Either</RootNamespace>
 		<LangVersion>12</LangVersion>
+		<RootNamespace>RhymesOfUncertainty</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
