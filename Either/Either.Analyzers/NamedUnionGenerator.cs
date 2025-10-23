@@ -20,8 +20,7 @@ public class NamedUnionGenerator : IIncrementalGenerator
             {
                 var symbol = (INamedTypeSymbol)ctx.TargetSymbol;
 
-                //TODO check if it's a partial type
-                if (!ImplementsInterface(symbol, out var interfaceSymbol))
+                if (symbol.TypeKind != TypeKind.Structure || !ImplementsInterface(symbol, out var interfaceSymbol))
                 {
                     return default((string Name, string Namespace, ImmutableArray<string> Types)?);
                 }
