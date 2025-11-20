@@ -8,12 +8,28 @@ namespace RhymesOfUncertainty.Test;
 
 internal static class Shared
 {
-    internal static readonly string Structs = @"
+    internal static readonly string Types = @"
 readonly struct Either<T1, T2>
 {
     public object Thing { get; }
 }
+
 readonly struct Either<T1, T2, T3>
+{
+    public object Thing { get; }
+}
+
+interface IEither<T1, T2>
+{
+    object Thing { get; }
+}
+
+struct IntOrBool : IEither<int, bool>
+{
+    public object Thing { get; }
+}
+
+struct Result<T> : IEither<T, System.Exception>
 {
     public object Thing { get; }
 }
@@ -21,26 +37,32 @@ readonly struct Either<T1, T2, T3>
 
     internal static string GenerateSwitch(SwitchType switchType, IList<string> typesToCheck, IList<string> casesChecked, SwitchGenerationOptions options = null)
     {
+        var unionType = $"Either<{string.Join(", ", typesToCheck)}>";
+        return GenerateSwitchForANamedUnion(switchType, unionType, casesChecked, options);
+    }
+
+    internal static string GenerateSwitchForANamedUnion(SwitchType switchType, string namedUnionType, IList<string> casesChecked, SwitchGenerationOptions options = null)
+    {
         return switchType switch
         {
-            SwitchType.Stmt => GenerateSwitchStmt(typesToCheck, casesChecked, options ?? new()),
-            SwitchType.Expr => GenerateSwitchExpr(typesToCheck, casesChecked, options ?? new()),
+            SwitchType.Stmt => GenerateSwitchStmt(namedUnionType, casesChecked, options ?? new()),
+            SwitchType.Expr => GenerateSwitchExpr(namedUnionType, casesChecked, options ?? new()),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
     }
 
-    private static string GenerateSwitchStmt(IList<string> typesToCheck, IList<string> casesChecked, SwitchGenerationOptions options)
+    private static string GenerateSwitchStmt(string unionType, IList<string> casesChecked, SwitchGenerationOptions options)
     {
         int tagNumber = 0;
 
         var code =
             string.Join("\n", (options.Usings ?? []).Select(u => $"using {u};")) +
             "\n" +
-            Structs +
+            Types +
 @$"
 class C
 {{
-    void M(Either<{string.Join(", ", typesToCheck)}> x)
+    void M({unionType} x)
     {{
         {TagIfNecessary("switch", options.TagSwitch)} ({Expr()})
         {{
@@ -74,18 +96,18 @@ class C
         }
     }
 
-    private static string GenerateSwitchExpr(IList<string> typesToCheck, IList<string> casesChecked, SwitchGenerationOptions options)
+    private static string GenerateSwitchExpr(string unionType, IList<string> casesChecked, SwitchGenerationOptions options)
     {
         int tagNumber = 0;
 
         var code =
             string.Join("\n", (options.Usings ?? []).Select(u => $"using {u};")) +
             "\n" +
-            Structs +
+            Types +
 @$"
 class C
 {{
-    int M(Either<{string.Join(", ", typesToCheck)}> x)
+    int M({unionType} x)
     {{
         return {Expr()} {TagIfNecessary("switch", options.TagSwitch)}
         {{

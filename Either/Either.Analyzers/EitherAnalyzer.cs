@@ -187,19 +187,38 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         //Test switching on something other than either
         if (propertyReference.Instance == null ||
             propertyReference.Instance.Type == null ||
-            propertyReference.Instance.Type.Kind != SymbolKind.NamedType ||
-            propertyReference.Instance.Type.Name != "Either")
+            propertyReference.Instance.Type.Kind != SymbolKind.NamedType)
         {
             return null;
         }
 
-        var typeSwitchedOn = (INamedTypeSymbol)propertyReference.Instance.Type;
-        if (typeSwitchedOn.Arity <= 1) //TODO test switching on type called Either that has an arity of 1 or 0
+        if (propertyReference.Instance.Type.Name == "Either")
+        {
+            var typeSwitchedOn = (INamedTypeSymbol)propertyReference.Instance.Type;
+            if (typeSwitchedOn.Arity <= 1) //TODO test switching on type called Either that has an arity of 1 or 0
+            {
+                return null;
+            }
+            return typeSwitchedOn;
+        }
+
+        if (propertyReference.Instance.Type.Interfaces.Length == 0)
         {
             return null;
         }
 
-        return typeSwitchedOn;
+        INamedTypeSymbol? @interface = null;
+
+        foreach (var i in propertyReference.Instance.Type.Interfaces)
+        {
+            if (i.Name == "IEither" && i.Arity > 1) //TODO test switching on arity of 1
+            {
+                @interface = i;
+                break;
+            }
+        }
+
+        return @interface;
     }
 
     private void ReportDiagnostics
