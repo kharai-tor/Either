@@ -29,6 +29,11 @@ struct IntOrBool : IEither<int, bool>
     public object Thing { get; }
 }
 
+struct IntOrString : IEither<int, string>
+{
+    public object Thing { get; }
+}
+
 struct Result<T> : IEither<T, System.Exception>
 {
     public object Thing { get; }
