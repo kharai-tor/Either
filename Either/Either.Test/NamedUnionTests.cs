@@ -60,4 +60,40 @@ public class NamedUnionTests
             .WithLocation(0);
         await VerifyCS.VerifyAnalyzerAsync(code, expected);
     }
+
+    [Theory]
+    [InlineData(SwitchType.Stmt)]
+    [InlineData(SwitchType.Expr)]
+    public async Task Switch_With_A_Named_Union_Type_And_Redundant_Case_Complains(SwitchType switchType)
+    {
+        var code = Shared.GenerateSwitchForANamedUnion(switchType, "IntOrBool", ["int", "bool", "t:string"]);
+        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
+            .WithLocation(0)
+            .WithArguments("string");
+        await VerifyCS.VerifyAnalyzerAsync(code, expected);
+    }
+
+    [Theory]
+    [InlineData(SwitchType.Stmt)]
+    [InlineData(SwitchType.Expr)]
+    public async Task Switch_With_A_Named_Union_Type_And_Redundant_Null_Case_Complains(SwitchType switchType)
+    {
+        var code = Shared.GenerateSwitchForANamedUnion(switchType, "IntOrBool", ["int", "bool", "t:null"]);
+        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantCaseId)
+            .WithLocation(0)
+            .WithArguments("null");
+        await VerifyCS.VerifyAnalyzerAsync(code, expected);
+    }
+
+    [Theory]
+    [InlineData(SwitchType.Stmt, new[] { "int", "bool", "t:default" })]
+    [InlineData(SwitchType.Expr, new[] { "int", "bool", "t:_" })]
+    public async Task Switch_With_A_Named_Union_Type_And_A_Redundant_Default_Case_Complains(SwitchType switchType, string[] casesChecked)
+    {
+        var code = Shared.GenerateSwitchForANamedUnion(switchType, "IntOrBool", casesChecked);
+        var expected = VerifyCS.Diagnostic(EitherAnalyzer.RedundantDefaultId)
+            .WithLocation(0)
+            .WithArguments("Both");
+        await VerifyCS.VerifyAnalyzerAsync(code, expected);
+    }
 }
