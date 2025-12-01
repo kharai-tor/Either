@@ -34,6 +34,10 @@
 			<Generator>TextTemplatingFileGenerator</Generator>
 			<LastGenOutput>Either.cs</LastGenOutput>
 		</None>
+		<None Update="IEither.tt">
+		  <Generator>TextTemplatingFileGenerator</Generator>
+		  <LastGenOutput>IEither.cs</LastGenOutput>
+		</None>
 	</ItemGroup>
 	<ItemGroup>
 		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
@@ -44,10 +48,10 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Either.tt</DependentUpon>
 		</Compile>
-		<Compile Update="EitherGenerator.cs">
+		<Compile Update="IEither.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
-			<DependentUpon>EitherGenerator.tt</DependentUpon>
+			<DependentUpon>IEither.tt</DependentUpon>
 		</Compile>
 	</ItemGroup>
 </Project>

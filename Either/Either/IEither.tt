@@ -1,0 +1,18 @@
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+namespace RhymesOfUncertainty;
+<#
+    for(int i = 2; i <= 10; i++)
+    {
+        var name = "IEither<" + string.Join(", ", Enumerable.Range(1, i).Select(j => "T" + j)) + ">";
+#>
+
+public interface <#=name#>
+{
+    object Thing { get; }
+}
+<#
+    }
+#>
