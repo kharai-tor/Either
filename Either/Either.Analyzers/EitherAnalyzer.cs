@@ -72,8 +72,6 @@ public class EitherAnalyzer : DiagnosticAnalyzer
     private void AnalyzeSwitchStatement(OperationAnalysisContext context)
     {
         var switchOp = (ISwitchOperation)context.Operation;
-        var switchSyntax = (SwitchStatementSyntax)switchOp.Syntax;
-        var isNullForgiving = switchSyntax.Expression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
 
         var typeSwitchedOn = GetTypeSwitchedOn(switchOp.Value);
         if (typeSwitchedOn == null)
@@ -81,7 +79,12 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, out var hasNullableType);
+        var switchSyntax = (SwitchStatementSyntax)switchOp.Syntax;
+        var isNullForgiving = switchSyntax.Expression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
+        var isConditionalAccess = switchOp.Value.Kind == OperationKind.ConditionalAccess;
+
+        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, isConditionalAccess, out var hasNullableType);
+
         var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
 
         var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
@@ -127,8 +130,6 @@ public class EitherAnalyzer : DiagnosticAnalyzer
     private void AnalyzeSwitchExpression(OperationAnalysisContext context)
     {
         var switchOp = (ISwitchExpressionOperation)context.Operation;
-        var switchSyntax = (SwitchExpressionSyntax)switchOp.Syntax;
-        var isNullForgiving = switchSyntax.GoverningExpression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
 
         var typeSwitchedOn = GetTypeSwitchedOn(switchOp.Value);
         if (typeSwitchedOn == null)
@@ -136,7 +137,11 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, out var hasNullableType);
+        var switchSyntax = (SwitchExpressionSyntax)switchOp.Syntax;
+        var isNullForgiving = switchSyntax.GoverningExpression.IsKind(SyntaxKind.SuppressNullableWarningExpression);
+        var isConditionalAccess = switchOp.Value.Kind == OperationKind.ConditionalAccess;
+
+        var casesThatNeedToBeHandled = typeSwitchedOn.GetCasesThatNeedToBeHandled(isNullForgiving, isConditionalAccess, out var hasNullableType);
         var unhandledCases = new HashSet<ITypeSymbol?>(casesThatNeedToBeHandled, SymbolEqualityComparer.Default);
 
         var redundantCases = new List<(IOperation Op, ITypeSymbol? Type)>();
@@ -171,6 +176,12 @@ public class EitherAnalyzer : DiagnosticAnalyzer
 
     private INamedTypeSymbol? GetTypeSwitchedOn(IOperation value)
     {
+        if (value.Kind == OperationKind.ConditionalAccess)
+        {
+            var conditionalAccess = (IConditionalAccessOperation)value;
+            value = conditionalAccess.WhenNotNull;
+        }
+
         if (value.Kind != OperationKind.PropertyReference)
         {
             return null;
@@ -311,10 +322,10 @@ public class EitherAnalyzer : DiagnosticAnalyzer
 
 public static class Extensions
 {
-    public static HashSet<ITypeSymbol?> GetCasesThatNeedToBeHandled(this INamedTypeSymbol namedType, bool ignoreNull, out bool hasNullableType)
+    public static HashSet<ITypeSymbol?> GetCasesThatNeedToBeHandled(this INamedTypeSymbol namedType, bool isNullForgiving, bool isConditionalAccess, out bool hasNullableType)
     {
         var result = new HashSet<ITypeSymbol?>(SymbolEqualityComparer.Default);
-        hasNullableType = false;
+        hasNullableType = isConditionalAccess;
 
         for (int i = 0; i < namedType.TypeArguments.Length; i++)
         {
@@ -334,7 +345,7 @@ public static class Extensions
             }
         }
 
-        if (hasNullableType && !ignoreNull)
+        if (hasNullableType && !isNullForgiving)
         {
             result.Add(null);
         }

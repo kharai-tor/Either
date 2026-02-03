@@ -48,10 +48,17 @@ struct Result<T> : IEither<T, System.Exception>
 
     internal static string GenerateSwitchForANamedUnion(SwitchType switchType, string namedUnionType, IList<string> casesChecked, SwitchGenerationOptions options = null)
     {
+        options ??= new();
+
+        if (options.IsUnionTypeNullable)
+        {
+            namedUnionType += "?";
+        }
+
         return switchType switch
         {
-            SwitchType.Stmt => GenerateSwitchStmt(namedUnionType, casesChecked, options ?? new()),
-            SwitchType.Expr => GenerateSwitchExpr(namedUnionType, casesChecked, options ?? new()),
+            SwitchType.Stmt => GenerateSwitchStmt(namedUnionType, casesChecked, options),
+            SwitchType.Expr => GenerateSwitchExpr(namedUnionType, casesChecked, options),
             _ => throw new ArgumentOutOfRangeException(nameof(switchType)),
         };
     }
@@ -80,7 +87,7 @@ class C
 
         string Expr()
         {
-            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : "x.Thing", options.TagExpr);
+            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : options.IsUnionTypeNullable ? "x?.Thing" : "x.Thing", options.TagExpr);
         }
 
         string GetCase(string caseChecked)
@@ -125,7 +132,7 @@ class C
 
         string Expr()
         {
-            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : "x.Thing", options.TagExpr);
+            return TagIfNecessary(options.IsNullForgiving ? "x.Thing!" : options.IsUnionTypeNullable ? "x?.Thing" : "x.Thing", options.TagExpr);
         }
 
         string GetCase(string caseChecked)
@@ -154,4 +161,5 @@ internal class SwitchGenerationOptions
     internal string[] Usings { get; init; } = default;
     internal bool IsNullForgiving { get; init; } = false;
     internal bool TagExpr { get; init; } = false;
+    internal bool IsUnionTypeNullable { get; init; } = false;
 }
