@@ -64,9 +64,6 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterOperationAction(AnalyzeSwitchStatement, OperationKind.Switch);
         context.RegisterOperationAction(AnalyzeSwitchExpression, OperationKind.SwitchExpression);
-
-        //SyntaxKind.ConditionalAccessExpression
-        //SyntaxKind.SuppressNullableWarningExpression
     }
 
     private void AnalyzeSwitchStatement(OperationAnalysisContext context)
@@ -280,44 +277,6 @@ public class EitherAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(diagnostic);
         }
     }
-
-    //Analyze this:
-
-    //DONE - //1. What if there is a clause that Doesn't match anything?
-    //ex: you have Either<string, int> and there's case boolean b
-
-    //DONE - //1.5 the default clause might be redundant when all cases are covered
-
-    //DONE - //2. Obviously make sure all cases are covered
-
-    //3. the default assignment
-
-    //4. null, null-forgiveness or whatever
-    //4.1 null-forgiveness is redundant because they're all value types?
-
-    //4.5 non-nullable reference types - a whole different story
-
-    //5. switch expression
-
-    //6. be strict about matching specific types and forget about inheritance?
-
-    //7. Should I call it Item? should I call it Value?
-
-    //8. All type kinds, classes, structs, delegates, enums, record classes?, record structs?
-
-    //DONE - //9. Matching generic types, type arguments must match like List<string> should not match List<int>!!!
-
-    //10. Matching generic types, case T1, case T2 in a generic function baby (this is getting out of hand)
-    //11. Matching Tuples
-    //12. Will aliasing work? like using SomeOtherType = Either<int, string> I mean it has to right?
-    //13. How about matching System.Nullable<T> when typed out Explicitly like that
-    //13.5 Matching interfaces? Generic interfaces?
-
-    //14. Either<int, int> should warn? Check how it works first, (low priority)
-
-    //15. Base Type
-
-    //16. Unit test for var pattern both for switch statement and switch expression
 }
 
 public static class Extensions
