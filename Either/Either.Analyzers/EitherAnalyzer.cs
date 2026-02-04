@@ -56,7 +56,18 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule, RedundantNullForgivingExprRule];
+    public const string UnsupportedWhenClauseId = "SwitchUnsupportedWhenClause";
+    private static readonly DiagnosticDescriptor UnsupportedWhenClauseRule = new
+    (
+        UnsupportedWhenClauseId,
+        title: "When conditions are not supported",
+        messageFormat: "The analysis of when conditions is not supported",
+        category: "Compiler",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NotExhaustiveRule, RedundantCaseRule, RedundantDefaultRule, RedundantNullForgivingExprRule, UnsupportedWhenClauseRule];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -99,9 +110,11 @@ public class EitherAnalyzer : DiagnosticAnalyzer
                     continue;
                 }
 
-                if (clause.CaseKind == CaseKind.Pattern) //THE WHEN THING! with a test!
+                if (clause.CaseKind == CaseKind.Pattern)
                 {
                     var c = (IPatternCaseClauseOperation)clause;
+                    CheckReportWhenClause(context, c.Syntax);
+
                     if (!c.Pattern.TryExtractType(context, out var matchedType))
                     {
                         continue;
@@ -147,6 +160,8 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         for (int i = 0; i < switchOp.Arms.Length; i++)
         {
             var arm = switchOp.Arms[i];
+            CheckReportWhenClause(context, arm.Syntax);
+
             if (arm.Pattern.Kind == OperationKind.DiscardPattern)
             {
                 defaultCase = arm.Pattern;
@@ -274,6 +289,28 @@ public class EitherAnalyzer : DiagnosticAnalyzer
         if (redundantNullForgivingExpr != null)
         {
             var diagnostic = Diagnostic.Create(RedundantNullForgivingExprRule, redundantNullForgivingExpr.GetLocation());
+            context.ReportDiagnostic(diagnostic);
+        }
+    }
+
+    private void CheckReportWhenClause(OperationAnalysisContext context, SyntaxNode syntax)
+    {
+        var whenClause = default(WhenClauseSyntax?);
+
+        if (syntax.IsKind(SyntaxKind.CasePatternSwitchLabel))
+        {
+            var caseSyntax = (CasePatternSwitchLabelSyntax)syntax;
+            whenClause = caseSyntax.WhenClause;
+        }
+        else if (syntax.IsKind(SyntaxKind.SwitchExpressionArm))
+        {
+            var armSyntax = (SwitchExpressionArmSyntax)syntax;
+            whenClause = armSyntax.WhenClause;
+        }
+
+        if (whenClause != null)
+        {
+            var diagnostic = Diagnostic.Create(UnsupportedWhenClauseRule, whenClause.GetLocation());
             context.ReportDiagnostic(diagnostic);
         }
     }
