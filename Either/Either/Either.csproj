@@ -6,7 +6,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Either.Main</PackageId>
-		<Version>0.0.2</Version>
+		<Version>0.0.4</Version>
 		<Authors>Tornike Kharaishvili</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © Tornike Kharaishvili</Copyright>
@@ -20,7 +20,7 @@
 		<None Include="readme.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Either.Analyzers" Version="0.0.1" />
+		<PackageReference Include="Either.Analyzers" Version="0.0.4" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Either.cs">
