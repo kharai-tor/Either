@@ -6,7 +6,7 @@ In the following example:
 ```C#
 switch (shape.Thing)
 {
-    //
+    // ...
 }
 ```
 if shape was a class instance, it would be possible for it to be null, running the risk of a null reference exception. Making it a struct eliminates that risk.
@@ -82,3 +82,106 @@ void M(Either<int, bool> x)
 }
 ```
 the when clause here will be flagged as a compiler error as it only sometimes covers the bool case.
+
+### Nullability
+
+It's an involved subject with C# generally and it's an involved subject with this specific project too.
+
+Any time you have a reference type as a part of the union, you'll be asked to handle the null case:
+```C#
+void M(Either<int, string> x)
+{
+    switch (x.Thing)
+    {
+        case int:
+            break;
+        case string:
+            break;
+        case null: // string being nullable makes this necessary
+            break;
+    }
+}
+```
+Same is true for nullable value types:
+```C#
+Either<int, bool?> x
+```
+
+If you're sure that `x.Thing` can never be null in your particular situation, you can use the `!` [trust me bro operator](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-forgiving) to avoid handling `case null`:
+```C#
+switch (x.Thing!)
+{
+    // ...
+}
+```
+
+If the `Either` type you're using itself is nullable, you can use the `?.` null-conditional access operator to switch on it and you'll again be asked to handle the null case:
+```C#
+void M(Either<int, bool>? x)
+{
+    switch (x?.Thing) // null-conditional access
+    {
+        case int:
+            break;
+        case bool:
+            break;
+        case null: // neither int nor bool are nullable but x itself is
+            break;
+    }
+}
+```
+
+#### How about nullable reference types?
+
+Not yet supported, but on the list of things to do.
+
+### The default case
+
+The `default:` case acts as you'd expect in the switch statement, it removes the need to handle any cases. Same goes for the `_` with switch expressions.
+
+### What else?
+
+Another analyzer that comes with this package reports any redundant cases:
+```C#
+void M(Either<int, bool> x)
+{
+    switch (x.Thing)
+    {
+        case int:
+            break;
+        case bool:
+            break;
+        case string: // you'll get a warning here since string is not one of the possible types
+            break;
+    }
+}
+```
+
+Same goes for default if all cases are handled:
+```C#
+void M(Either<int, bool> x)
+{
+    switch (x.Thing)
+    {
+        case int:
+            break;
+        case bool:
+            break;
+        default: // warning since both possible types are handled, there's no need for default
+            break;
+    }
+}
+```
+
+And the trust me bro operator as well:
+```C#
+void M(Either<int, bool> x)
+{
+    switch (x.Thing!) // neither int nor bool are nullable making the ! redundant
+    {
+        // ...
+    }
+}
+```
+
+
