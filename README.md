@@ -1,3 +1,4 @@
+![sharp or flat](./icon/icon128.png)
 # Either
 
 This project enables you to use union types with native C# switch exhaustiveness checking. It does so by providing several types and relevant Roslyn diagnostics around them. Install the [Either.Main](https://www.nuget.org/packages/Either.Main) nuget package to get the full experience.

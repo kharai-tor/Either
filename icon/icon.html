@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Either</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left">
+        <span>♯</span>
+      </div>
+      <div class="or">
+        <div></div>
+        <div></div>
+      </div>
+      <div class="right">
+        <span class="flat">♭</span>
+      </div>
+    </div>
+
+    <style>
+      html {
+        box-sizing: border-box;
+      }
+      *,
+      *:before,
+      *:after {
+        box-sizing: inherit;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 128px;
+        height: 128px;
+        font-size: 50px;
+        position: relative;
+      }
+
+      .flat {
+        padding-bottom: 5px;
+      }
+
+      .or {
+        z-index: 1;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        left: 0;
+      }
+
+      .or > div {
+        height: 70px;
+        width: 5px;
+      }
+
+      .or > div:first-child {
+        background-color: white;
+      }
+
+      .or > div:last-child {
+        background-color: #740fb2;
+      }
+
+      .left,
+      .right {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #740fb2;
+      }
+
+      .left {
+        background-color: #740fb2;
+        color: white;
+        left: 0;
+        border-right: none;
+      }
+
+      .right {
+        background-color: white;
+        color: #740fb2;
+        right: 0;
+        border-left: none;
+      }
+    </style>
+  </body>
+</html>

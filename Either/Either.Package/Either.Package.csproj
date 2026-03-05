@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <PackageId>Either.Analyzers</PackageId>
-    <PackageVersion>0.0.4</PackageVersion>
+    <PackageVersion>0.0.5</PackageVersion>
 	<Authors>Tornike Kharaishvili</Authors>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright © Tornike Kharaishvili</Copyright>
@@ -25,12 +25,14 @@
 	<PackageReadmeFile>readme.md</PackageReadmeFile>
     <DevelopmentDependency>true</DevelopmentDependency>
     <!--<NoPackageAnalysis>true</NoPackageAnalysis>-->
+	<PackageIcon>icon128.png</PackageIcon>
 
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="readme.md" Pack="true" PackagePath="\" />
+	<None Include="../../icon/icon128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 	
   <ItemGroup>

@@ -6,7 +6,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Either.Main</PackageId>
-		<Version>0.0.4</Version>
+		<Version>0.0.5</Version>
 		<Authors>Tornike Kharaishvili</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © Tornike Kharaishvili</Copyright>
@@ -15,12 +15,14 @@
 		<RepositoryUrl>https://github.com/kharai-tor/Either</RepositoryUrl>
 		<PackageTags>Discriminated unions;Union types;switch;exhaustiveness</PackageTags>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
+		<PackageIcon>icon128.png</PackageIcon>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="readme.md" Pack="true" PackagePath="\" />
+		<None Include="../../icon/icon128.png" Pack="true" PackagePath="\" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Either.Analyzers" Version="0.0.4" />
+		<PackageReference Include="Either.Analyzers" Version="0.0.5" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Either.cs">
